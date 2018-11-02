@@ -1,0 +1,42 @@
+---
+- name: Setup server
+  hosts: webservers
+  tasks:
+  - name: Install GUI related packages
+    yum:
+      state: present
+      name: 
+        - '@gnome desktop'
+        - xorg*
+  - name: Remove GUI related packages
+    yum:
+      state: absent
+      name:
+        - initial-setup
+        - initial-setup-gui
+  - name: Switch to the GUI target
+    shell:
+      - "systemctl isolate graphical.target"
+      - "systemctl set-default graphical.target"
+  - name: Install LAMP packages
+    yum:
+      state: present
+      name:
+        - httpd
+        - mariadb-server
+        - mariadb
+        - php
+        - php-mysql
+  - name: ensure httpd is running
+    service:
+      name: httpd
+      state: started
+  - name: Copy hello world php file
+    copy:
+      src: /vagrant/files/hello_world.php
+      dest: /tmp/hello_world.php
+  handlers:
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted      

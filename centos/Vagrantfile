@@ -15,20 +15,33 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.box_version = "1809.01"
 
-  config.vm.provider "virtualbox" do |v|
-    v.gui = true
-    v.memory = 2048
-    v.cpus = 2
+  #config.vm.provider "virtualbox" do |v|
+  #  v.gui = true
+  #  v.memory = 2048
+  #  v.cpus = 2
+  #end
+
+  config.vm.provision "shell", inline: "yum install -y ansible"
+  # config.vm.provision "shell", inline: "yum -y install expect"
+
+  provisioner = Vagrant::Util::Platform.windows? ? :guest_ansible : :ansible
+  
+  config.vm.define "local" do |local|
+    local.vm.hostname = "local"
+    config.vm.provision provisioner do |ansible|
+      #ansible.playbook = "ansible/playbook.yml"
+      ansible.playbook = "playbook.yml"
+    end
   end
 
-  config.vm.provision "shell", inline: "yum -y install expect"
-  config.vm.provision "shell", path: "scripts/setup-centos-gui.sh"
-  config.vm.provision "shell", path: "scripts/install-LAMP.sh"
-  config.vm.provision "shell", path: "scripts/mysql_secure_installation.sh"
+  # config.vm.provision "shell", path: "scripts/setup-centos-gui.sh"
+  # config.vm.provision "shell", path: "scripts/install-LAMP.sh"
+  # config.vm.provision "shell", path: "scripts/mysql_secure_installation.sh"
 
-  config.vm.provision "file", source: "files/hello_world.php", destination: "/tmp/hello_world.php"
+  #config.vm.provision "file", source: "files/hello_world.php", destination: "/tmp/hello_world.php"
 
-  config.vm.synced_folder "wordpress/", "/home/vagrant/wordpress"
+  # config.vm.synced_folder "wordpress/", "/home/vagrant/wordpress"
+
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
